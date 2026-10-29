@@ -1,0 +1,10 @@
+/* Policies CSS */
+.nav-pills .nav-link {
+    color: #475569;
+    border-radius: 8px;
+    margin-bottom: 4px;
+}
+.nav-pills .nav-link.active {
+    background-color: #0f172a;
+    color: #ffffff;
+}

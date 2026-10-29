@@ -1,0 +1,19 @@
+.nav-pills .nav-link {
+    color: #475569;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+.nav-pills .nav-link:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+.nav-pills .nav-link.active {
+    background-color: #0f172a;
+    color: #ffffff;
+}
+
+.nav-pills .nav-link.active .badge {
+    background-color: #334155 !important;
+}

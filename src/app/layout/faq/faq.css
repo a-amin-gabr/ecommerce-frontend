@@ -1,0 +1,10 @@
+/* FAQ specific styles */
+.accordion-button:not(.collapsed) {
+    background-color: #f8fafc;
+    color: #0f172a;
+    box-shadow: none;
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+}

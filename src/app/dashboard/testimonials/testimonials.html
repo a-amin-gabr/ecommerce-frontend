@@ -1,0 +1,85 @@
+<div class="container py-4 mb-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 fw-bold text-dark mb-1">Customer Testimonials Moderation</h1>
+      <p class="text-secondary small mb-0">Review client feedback before it is displayed on the public website storefront.</p>
+    </div>
+  </div>
+
+  <div class="card-premium p-3 mb-4">
+    <div class="row align-items-center">
+      <div class="col-md-4">
+        <select class="form-select" [(ngModel)]="statusFilter" (change)="fetchTestimonials()">
+          <option value="">All Reviews (Pending, Approved, Rejected)</option>
+          <option value="pending">⏳ Pending Review Only</option>
+          <option value="approved">✅ Approved Reviews Only</option>
+          <option value="rejected">❌ Rejected Reviews Only</option>
+        </select>
+      </div>
+      <div class="col-md-8 text-md-end text-muted small">
+        Reviews Count: <strong>{{ testimonials.length }}</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-premium p-4">
+    @if(isLoading){
+      <div class="text-center py-5">
+        <div class="spinner-border text-dark" role="status"></div>
+      </div>
+    }
+    @else if(testimonials.length === 0){
+      <div class="text-center py-5 text-muted small">
+        No testimonials found.
+      </div>
+    }
+    @else {
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light small">
+            <tr>
+              <th>Author</th>
+              <th>Rating</th>
+              <th>Comment</th>
+              <th>Status</th>
+              <th>Submitted</th>
+              <th class="text-end">Moderation</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for(t of testimonials; track t._id){
+              <tr>
+                <td class="fw-bold text-dark small">{{ t.userName }}</td>
+                <td class="small text-warning">⭐ {{ t.rating }}/5</td>
+                <td class="small text-secondary" style="max-width: 320px;">
+                  "{{ t.comment }}"
+                </td>
+                <td>
+                  <span class="badge text-uppercase small" [ngClass]="{
+                    'bg-warning text-dark': t.status === 'pending',
+                    'bg-success': t.status === 'approved',
+                    'bg-danger': t.status === 'rejected'
+                  }">
+                    {{ t.status }}
+                  </span>
+                </td>
+                <td class="small text-muted">{{ t.createdAt | date:'mediumDate' }}</td>
+                <td class="text-end">
+                  <div class="btn-group btn-group-sm">
+                    @if(t.status !== 'approved'){
+                      <button class="btn btn-outline-success" (click)="updateStatus(t, 'approved')">Approve</button>
+                    }
+                    @if(t.status !== 'rejected'){
+                      <button class="btn btn-outline-warning text-dark" (click)="updateStatus(t, 'rejected')">Reject</button>
+                    }
+                    <button class="btn btn-outline-danger" (click)="deleteTestimonial(t._id!)">Delete</button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

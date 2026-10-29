@@ -1,0 +1,82 @@
+<div class="product-card card-premium h-100 d-flex flex-column position-relative">
+  <!-- Stock Status Ribbon / Badge -->
+  <div class="position-absolute top-0 start-0 m-3 z-2">
+    @if(myProduct.stock === 0){
+      <span class="badge-stock badge-out-of-stock">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        Out of Stock
+      </span>
+    }
+    @else if(myProduct.stock <= 3){
+      <span class="badge-stock badge-low-stock">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Only {{ myProduct.stock }} left!
+      </span>
+    }
+    @else {
+      <span class="badge-stock badge-in-stock">
+        In Stock
+      </span>
+    }
+  </div>
+
+  <!-- Product Image Container -->
+  <a [routerLink]="['/product-list', myProduct.slug]" class="product-img-wrap d-block overflow-hidden bg-light text-center">
+    <img [src]="getImageUrl()" [alt]="myProduct.name" class="product-img img-fluid w-100" (error)="$any($event.target).src='https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=600&q=80'">
+  </a>
+
+  <!-- Product Body -->
+  <div class="p-3 d-flex flex-column flex-grow-1">
+    <div class="d-flex justify-content-between align-items-center mb-1">
+      <span class="product-category-tag text-uppercase">{{ getCategoryName() }}</span>
+      <span class="text-muted small">COD Available</span>
+    </div>
+
+    <h3 class="product-title mb-2">
+      <a [routerLink]="['/product-list', myProduct.slug]" class="text-dark text-decoration-none">
+        {{ myProduct.name || myProduct.title }}
+      </a>
+    </h3>
+
+    <p class="product-desc text-muted small mb-3 flex-grow-1">
+      {{ myProduct.desc || myProduct.description || 'Premium quality apparel designed for everyday elegance.' }}
+    </p>
+
+    <!-- Price and Add to Cart Action -->
+    <div class="d-flex align-items-center justify-content-between pt-2 border-top mt-auto">
+      <div>
+        <span class="product-price-label d-block text-muted small">Price</span>
+        <span class="product-price fw-bold text-dark fs-5">{{ myProduct.price }} <small class="text-secondary fs-6">EGP</small></span>
+      </div>
+
+      <div>
+        @if(myProduct.stock === 0){
+          <button class="btn btn-secondary btn-sm px-3 disabled" disabled>
+            Sold Out
+          </button>
+        }
+        @else {
+          <button 
+            type="button" 
+            class="btn btn-sm px-3"
+            [ngClass]="addedSuccess ? 'btn-success' : 'btn-brand-primary'"
+            (click)="addToCart($event)"
+            [disabled]="isAdding">
+            @if(isAdding){
+              <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+              Adding...
+            }
+            @else if(addedSuccess){
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1"><polyline points="20 6 9 17 4 12"/></svg>
+              Added!
+            }
+            @else {
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+              Add to Cart
+            }
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+</div>

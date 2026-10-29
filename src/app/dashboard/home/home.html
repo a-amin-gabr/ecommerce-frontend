@@ -1,0 +1,274 @@
+<div class="container py-4 mb-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 fw-bold text-dark mb-1">Executive Dashboard</h1>
+      <p class="text-secondary small mb-0">Real-time overview of clothes inventory, pending orders, and customer feedback.</p>
+    </div>
+    <button class="btn btn-brand-outline btn-sm" (click)="loadStats()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
+      Refresh Metrics
+    </button>
+  </div>
+
+  @if(isLoading){
+    <div class="text-center py-5 my-5">
+      <div class="spinner-border text-dark" role="status"></div>
+      <p class="text-muted mt-2 small">Loading business metrics...</p>
+    </div>
+  }
+  @else if(stats){
+    <!-- Top Metrics Cards Row -->
+    <div class="row g-3 mb-4">
+      <!-- Out of Stock Alert Card -->
+      <div class="col-sm-6 col-lg-3">
+        <div class="card-premium p-3 h-100 border-start border-4 border-danger">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="text-muted small fw-bold text-uppercase">Out of Stock</span>
+            <span class="badge bg-danger rounded-pill">{{ stats.metrics.outOfStockCount }}</span>
+          </div>
+          <div class="fs-3 fw-bold text-danger">{{ stats.metrics.outOfStockCount }}</div>
+          <span class="text-secondary small">Products with 0 stock</span>
+        </div>
+      </div>
+
+      <!-- Low Stock Alert Card (<= 3) -->
+      <div class="col-sm-6 col-lg-3">
+        <div class="card-premium p-3 h-100 border-start border-4 border-warning">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="text-muted small fw-bold text-uppercase">Low Stock Alert</span>
+            <span class="badge bg-warning text-dark rounded-pill">{{ stats.metrics.lowStockCount }}</span>
+          </div>
+          <div class="fs-3 fw-bold text-warning-emphasis">{{ stats.metrics.lowStockCount }}</div>
+          <span class="text-secondary small">Only 1, 2, or 3 left</span>
+        </div>
+      </div>
+
+      <!-- Pending Orders Card -->
+      <div class="col-sm-6 col-lg-3">
+        <div class="card-premium p-3 h-100 border-start border-4 border-primary">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="text-muted small fw-bold text-uppercase">Pending Orders</span>
+            <span class="badge bg-primary rounded-pill">{{ stats.metrics.pendingOrdersCount }}</span>
+          </div>
+          <div class="fs-3 fw-bold text-primary">{{ stats.metrics.pendingOrdersCount }}</div>
+          <span class="text-secondary small">Awaiting preparation/dispatch</span>
+        </div>
+      </div>
+
+      <!-- Today's Volume Card (~20 orders/day) -->
+      <div class="col-sm-6 col-lg-3">
+        <div class="card-premium p-3 h-100 border-start border-4 border-success">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="text-muted small fw-bold text-uppercase">Today's Orders</span>
+            <span class="badge bg-success rounded-pill">{{ stats.metrics.todayOrdersCount }}</span>
+          </div>
+          <div class="fs-3 fw-bold text-success">{{ stats.metrics.todayOrdersCount }} <span class="fs-6 text-muted fw-normal">/ ~20 target</span></div>
+          <span class="text-secondary small">Total Revenue: <strong>{{ stats.metrics.totalRevenue }} EGP</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Second Metrics Summary Bar -->
+    <div class="card-premium p-3 mb-4 bg-light">
+      <div class="row text-center g-3">
+        <div class="col-md-3 col-6">
+          <div class="fs-5 fw-bold text-dark">{{ stats.metrics.totalProductsCount }}</div>
+          <div class="text-muted small">Catalog Products</div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="fs-5 fw-bold text-dark">{{ stats.metrics.totalCategoriesCount }}</div>
+          <div class="text-muted small">Categories</div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="fs-5 fw-bold text-dark">{{ stats.metrics.totalUsersCount }}</div>
+          <div class="text-muted small">Registered Customers</div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="fs-5 fw-bold text-dark">{{ stats.metrics.totalOrdersCount }}</div>
+          <div class="text-muted small">Total Lifetime Orders</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Urgent Alerts Row: Out of Stock & Low Stock Items -->
+    <div class="row g-4 mb-4">
+      <!-- Out of Stock List -->
+      <div class="col-lg-6">
+        <div class="card-premium p-4 h-100">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold text-dark fs-6 mb-0 d-flex align-items-center gap-2">
+              <span class="p-1 rounded bg-danger-subtle text-danger">⚠️</span>
+              Out of Stock Products ({{ stats.alerts.outOfStockProducts.length }})
+            </h5>
+            <a routerLink="/dashboard/products" class="small text-decoration-none">Manage Products →</a>
+          </div>
+
+          @if(stats.alerts.outOfStockProducts.length === 0){
+            <div class="p-3 bg-success-subtle text-success rounded-3 small">
+              ✨ Excellent! All clothing catalog items currently have available stock.
+            </div>
+          }
+          @else {
+            <div class="table-responsive">
+              <table class="table table-sm align-middle mb-0">
+                <thead class="table-light small">
+                  <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th class="text-end">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for(item of stats.alerts.outOfStockProducts; track item._id){
+                    <tr>
+                      <td class="fw-semibold text-dark small">{{ item.name || item.title }}</td>
+                      <td class="small">{{ item.price }} EGP</td>
+                      <td><span class="badge bg-danger small">0 Left</span></td>
+                      <td class="text-end">
+                        <a routerLink="/dashboard/products" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.75rem;">Restock</a>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Low Stock List (Only 1, 2, or 3 left!) -->
+      <div class="col-lg-6">
+        <div class="card-premium p-4 h-100">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold text-dark fs-6 mb-0 d-flex align-items-center gap-2">
+              <span class="p-1 rounded bg-warning-subtle text-warning">⏳</span>
+              Low Stock Warnings ({{ stats.alerts.lowStockProducts.length }})
+            </h5>
+            <a routerLink="/dashboard/products" class="small text-decoration-none">Manage Products →</a>
+          </div>
+
+          @if(stats.alerts.lowStockProducts.length === 0){
+            <div class="p-3 bg-light text-secondary rounded-3 small">
+              No products are in critical low stock (under 3 pieces).
+            </div>
+          }
+          @else {
+            <div class="table-responsive">
+              <table class="table table-sm align-middle mb-0">
+                <thead class="table-light small">
+                  <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th class="text-end">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for(item of stats.alerts.lowStockProducts; track item._id){
+                    <tr>
+                      <td class="fw-semibold text-dark small">{{ item.name || item.title }}</td>
+                      <td class="small">{{ item.price }} EGP</td>
+                      <td>
+                        <span class="badge bg-warning text-dark small">Only {{ item.stock }} left!</span>
+                      </td>
+                      <td class="text-end">
+                        <a routerLink="/dashboard/products" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.75rem;">Update</a>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Pending Testimonials Needing Review -->
+    @if(stats.alerts.pendingTestimonials.length > 0){
+      <div class="card-premium p-4 mb-4 border-warning">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold text-dark fs-6 mb-0 d-flex align-items-center gap-2">
+            <span>⭐</span>
+            New Customer Testimonials Needing Approval ({{ stats.alerts.pendingTestimonials.length }})
+          </h5>
+          <a routerLink="/dashboard/testimonials" class="small text-decoration-none">View All Testimonials →</a>
+        </div>
+
+        <div class="row g-3">
+          @for(t of stats.alerts.pendingTestimonials; track t._id){
+            <div class="col-md-6">
+              <div class="p-3 rounded-3 border bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <strong class="text-dark small">{{ t.userName }}</strong>
+                  <span class="text-warning small">⭐ {{ t.rating }}/5</span>
+                </div>
+                <p class="text-secondary small mb-2 fst-italic">"{{ t.comment }}"</p>
+                <div class="d-flex justify-content-end gap-2">
+                  <button class="btn btn-sm btn-outline-success py-0 px-2" style="font-size: 0.8rem;" (click)="approveTestimonial(t._id!)">Approve</button>
+                  <button class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 0.8rem;" (click)="rejectTestimonial(t._id!)">Reject</button>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Recent Pending Orders Quick Management -->
+    <div class="card-premium p-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h5 class="fw-bold text-dark fs-6 mb-0">Pending Cash on Delivery Orders</h5>
+          <small class="text-muted">Take immediate action to dispatch orders to couriers.</small>
+        </div>
+        <a routerLink="/dashboard/orders" class="btn btn-brand-primary btn-sm">Full Orders Table →</a>
+      </div>
+
+      @if(stats.pendingOrders.length === 0){
+        <div class="p-4 text-center text-muted small bg-light rounded-3">
+          No orders currently in Pending status. All orders processed!
+        </div>
+      }
+      @else {
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead class="table-light small">
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Mobile Snapshot</th>
+                <th>Address Snapshot</th>
+                <th>Total (COD)</th>
+                <th>Date</th>
+                <th class="text-end">Quick Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for(order of stats.pendingOrders; track order._id){
+                <tr>
+                  <td class="fw-bold text-dark small">#{{ order._id.substring(order._id.length - 8).toUpperCase() }}</td>
+                  <td class="small">{{ order.userId ? ($any(order.userId).name || 'Guest') : 'User' }}</td>
+                  <td class="small fw-semibold">{{ order.mobileSnapshot }}</td>
+                  <td class="small text-truncate" style="max-width: 200px;">
+                    {{ order.addressSnapshot?.title }}: {{ order.addressSnapshot?.addressData }}, {{ order.addressSnapshot?.city }}
+                  </td>
+                  <td class="small fw-bold text-dark">{{ order.totalAmount }} EGP</td>
+                  <td class="small text-muted">{{ order.date }}</td>
+                  <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                      <button class="btn btn-outline-info" (click)="quickUpdateStatus(order._id, 'preparing')">Prepare</button>
+                      <button class="btn btn-outline-primary" (click)="quickUpdateStatus(order._id, 'shipped')">Ship</button>
+                      <button class="btn btn-outline-danger" (click)="quickUpdateStatus(order._id, 'cancelled by admin')">Cancel</button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,208 @@
+<div class="container py-4 mb-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 fw-bold text-dark mb-1">Products Management</h1>
+      <p class="text-secondary small mb-0">Control clothing catalog, manage prices, real-time stock, and category assignments.</p>
+    </div>
+    <button class="btn btn-brand-primary" (click)="openAddModal()">
+      + Add New Product
+    </button>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="card-premium p-3 mb-4">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-6">
+        <input 
+          type="text" 
+          class="form-control" 
+          placeholder="Search products by title, description..." 
+          [(ngModel)]="searchQuery" 
+          (keyup.enter)="fetchProducts()">
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-brand-outline btn-sm me-2" (click)="fetchProducts()">Search</button>
+        <button class="btn btn-link btn-sm text-secondary text-decoration-none" (click)="searchQuery=''; fetchProducts()">Clear</button>
+      </div>
+      <div class="col-md-3 text-md-end text-muted small">
+        Total Products: <strong>{{ products.length }}</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Products Table -->
+  <div class="card-premium p-4">
+    @if(isLoading){
+      <div class="text-center py-5">
+        <div class="spinner-border text-dark" role="status"></div>
+      </div>
+    }
+    @else if(products.length === 0){
+      <div class="text-center py-5 text-muted small">
+        No products found in the database.
+      </div>
+    }
+    @else {
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light small">
+            <tr>
+              <th>Image</th>
+              <th>Product Details</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Stock Status</th>
+              <th>Active</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for(p of products; track p._id){
+              <tr [class.table-light]="p.isDeleted">
+                <td style="width: 70px;">
+                  <img [src]="getImageUrl(p)" class="rounded-2" style="width: 50px; height: 50px; object-fit: cover;" (error)="$any($event.target).src='https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=100&q=80'">
+                </td>
+                <td>
+                  <div class="fw-bold text-dark">{{ p.name || p.title }}</div>
+                  <div class="text-muted small">Slug: <code>{{ p.slug }}</code></div>
+                  @if(p.isDeleted){
+                    <span class="badge bg-danger-subtle text-danger small">Archived (Soft Deleted)</span>
+                  }
+                </td>
+                <td class="small">
+                  {{ p.categoryId ? ($any(p.categoryId).name || 'Unassigned') : 'None' }}
+                </td>
+                <td class="small fw-bold text-dark">{{ p.price }} EGP</td>
+                <td>
+                  @if(p.stock === 0){
+                    <span class="badge bg-danger small">Out of Stock (0)</span>
+                  }
+                  @else if(p.stock <= 3){
+                    <span class="badge bg-warning text-dark small">Only {{ p.stock }} Left!</span>
+                  }
+                  @else {
+                    <span class="badge bg-success-subtle text-success small">{{ p.stock }} in stock</span>
+                  }
+                </td>
+                <td>
+                  <button 
+                    class="btn btn-sm" 
+                    [ngClass]="p.isActive ? 'btn-success' : 'btn-outline-secondary'" 
+                    style="font-size: 0.75rem;" 
+                    (click)="toggleActive(p)">
+                    {{ p.isActive ? 'Active' : 'Hidden' }}
+                  </button>
+                </td>
+                <td class="text-end">
+                  <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-secondary" (click)="openEditModal(p)">Edit</button>
+                    @if(!p.isDeleted){
+                      <button class="btn btn-outline-danger" (click)="softDelete(p)" title="Soft Delete">Delete</button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Add / Edit Modal -->
+@if(showModal){
+  <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.6);" (click)="closeModal()">
+    <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-content border-0 shadow-lg rounded-4">
+        <div class="modal-header border-bottom px-4 pt-4 pb-3">
+          <h5 class="modal-title fw-bold text-dark">{{ editingProductId ? 'Edit Product' : 'Add New Product' }}</h5>
+          <button type="button" class="btn-close" (click)="closeModal()"></button>
+        </div>
+
+        <div class="modal-body p-4">
+          @if(modalError){
+            <div class="alert alert-danger rounded-3 small mb-3">{{ modalError }}</div>
+          }
+
+          <form (ngSubmit)="saveProduct()">
+            <div class="row g-3">
+              <div class="col-md-8">
+                <label class="form-label small fw-bold text-muted text-uppercase">Product Name / Title</label>
+                <input type="text" class="form-control" [(ngModel)]="formName" name="formName" (input)="autoGenerateSlug()" required placeholder="e.g. Linen Summer Shirt">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted text-uppercase">URL Slug</label>
+                <input type="text" class="form-control" [(ngModel)]="formSlug" name="formSlug" required placeholder="linen-summer-shirt">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted text-uppercase">Category</label>
+                <select class="form-select" [(ngModel)]="formCategoryId" name="formCategoryId" (change)="onFormCategoryChange()">
+                  <option value="">Select Category</option>
+                  @for(cat of categories; track cat._id){
+                    <option [value]="cat._id">{{ cat.name }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted text-uppercase">Subcategory</label>
+                <select class="form-select" [(ngModel)]="formSubcategoryId" name="formSubcategoryId">
+                  <option value="">Select Subcategory</option>
+                  @for(sub of subcategories; track sub._id){
+                    <option [value]="sub._id">{{ sub.name }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted text-uppercase">Price (EGP)</label>
+                <input type="number" class="form-control" [(ngModel)]="formPrice" name="formPrice" min="0" required>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted text-uppercase">Available Stock Count</label>
+                <input type="number" class="form-control" [(ngModel)]="formStock" name="formStock" min="0" required>
+                <small class="text-muted" style="font-size: 0.75rem;">If 0: Out of Stock. If 1-3: Low Stock badge.</small>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted text-uppercase">Active on Storefront</label>
+                <div class="form-check form-switch mt-2">
+                  <input class="form-check-input" type="checkbox" id="modalActiveCheck" [(ngModel)]="formIsActive" name="formIsActive">
+                  <label class="form-check-label small" for="modalActiveCheck">Active (Visible)</label>
+                </div>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label small fw-bold text-muted text-uppercase">Product Image</label>
+                <input type="file" class="form-control" (change)="onFileSelected($event)" accept="image/*">
+                <small class="text-muted">Upload product photograph (.jpg, .jpeg, .png).</small>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label small fw-bold text-muted text-uppercase">Product Description</label>
+                <textarea class="form-control" rows="3" [(ngModel)]="formDesc" name="formDesc" placeholder="Fabric composition, fit, care instructions..."></textarea>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 pt-4 border-top mt-4">
+              <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
+              <button type="submit" class="btn btn-brand-primary" [disabled]="isSaving">
+                @if(isSaving){
+                  <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                  Saving...
+                }
+                @else {
+                  Save Product
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,180 @@
+<div class="container py-4 mb-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 fw-bold text-dark mb-1">Users & Admins Management</h1>
+      <p class="text-secondary small mb-0">View registered customers, block suspicious accounts, and create fellow admins.</p>
+    </div>
+    <button class="btn btn-brand-primary" (click)="openAdminModal()">
+      + Create New Admin
+    </button>
+  </div>
+
+  <!-- Search & Role Filter Bar -->
+  <div class="card-premium p-3 mb-4">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-5">
+        <input 
+          type="text" 
+          class="form-control" 
+          placeholder="Search by name, email..." 
+          [(ngModel)]="searchQuery" 
+          (keyup.enter)="fetchUsers()">
+      </div>
+      <div class="col-md-3">
+        <select class="form-select" [(ngModel)]="roleFilter" (change)="fetchUsers()">
+          <option value="">All Roles</option>
+          <option value="user">Customers Only</option>
+          <option value="admin">Administrators Only</option>
+        </select>
+      </div>
+      <div class="col-md-4 text-md-end">
+        <button class="btn btn-brand-outline btn-sm me-2" (click)="fetchUsers()">Filter</button>
+        <button class="btn btn-link btn-sm text-secondary text-decoration-none" (click)="searchQuery=''; roleFilter=''; fetchUsers()">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users Table -->
+  <div class="card-premium p-4">
+    @if(isLoading){
+      <div class="text-center py-5">
+        <div class="spinner-border text-dark" role="status"></div>
+      </div>
+    }
+    @else if(users.length === 0){
+      <div class="text-center py-5 text-muted small">
+        No users found matching your criteria.
+      </div>
+    }
+    @else {
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light small">
+            <tr>
+              <th>User</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Role</th>
+              <th>Addresses</th>
+              <th>Status</th>
+              <th>Registered</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for(u of users; track u._id){
+              <tr [class.table-danger]="u.isBlocked">
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="user-avatar-circle" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                      {{ u.name.charAt(0).toUpperCase() }}
+                    </div>
+                    <span class="fw-bold text-dark small">{{ u.name }}</span>
+                  </div>
+                </td>
+                <td class="small">{{ u.email }}</td>
+                <td class="small">{{ u.phone || '–' }}</td>
+                <td>
+                  <span class="badge text-uppercase small" [ngClass]="u.role === 'admin' ? 'bg-primary' : 'bg-secondary'">
+                    {{ u.role }}
+                  </span>
+                </td>
+                <td class="small">
+                  <span class="badge bg-light text-dark border">{{ u.addresses?.length || 0 }} saved</span>
+                </td>
+                <td>
+                  @if(u.isBlocked){
+                    <span class="badge bg-danger small">Blocked</span>
+                  }
+                  @else {
+                    <span class="badge bg-success-subtle text-success small">Active</span>
+                  }
+                </td>
+                <td class="small text-muted">{{ u.createdAt | date:'mediumDate' }}</td>
+                <td class="text-end">
+                  @if(u._id !== currentAdminId){
+                    <button 
+                      class="btn btn-sm" 
+                      [ngClass]="u.isBlocked ? 'btn-outline-success' : 'btn-outline-danger'" 
+                      style="font-size: 0.75rem;" 
+                      (click)="toggleBlock(u)">
+                      {{ u.isBlocked ? 'Unblock' : 'Block User' }}
+                    </button>
+                  }
+                  @else {
+                    <span class="badge bg-secondary-subtle text-secondary small">You</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Create Admin Modal -->
+@if(showAdminModal){
+  <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.6);" (click)="closeAdminModal()">
+    <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+      <div class="modal-content border-0 shadow-lg rounded-4">
+        <div class="modal-header border-bottom px-4 pt-4 pb-3">
+          <div>
+            <h5 class="modal-title fw-bold text-dark">Create New Administrator</h5>
+            <small class="text-muted">All Admins have identical permissions and can manage products and orders.</small>
+          </div>
+          <button type="button" class="btn-close" (click)="closeAdminModal()"></button>
+        </div>
+
+        <div class="modal-body p-4">
+          @if(adminSuccess){
+            <div class="alert alert-success rounded-3 small mb-3">{{ adminSuccess }}</div>
+          }
+          @if(adminError){
+            <div class="alert alert-danger rounded-3 small mb-3">{{ adminError }}</div>
+          }
+
+          <form (ngSubmit)="createAdmin()">
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-muted text-uppercase">Admin Full Name</label>
+              <input type="text" class="form-control" [(ngModel)]="adminName" name="adminName" required placeholder="e.g. Youssef Nabil">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-muted text-uppercase">Admin Email</label>
+              <input type="email" class="form-control" [(ngModel)]="adminEmail" name="adminEmail" required placeholder="admin@store.com">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-muted text-uppercase">Password</label>
+              <input type="password" class="form-control" [(ngModel)]="adminPassword" name="adminPassword" required placeholder="Set secure password">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-muted text-uppercase">Phone (Optional)</label>
+              <input type="tel" class="form-control" [(ngModel)]="adminPhone" name="adminPhone" placeholder="01xxxxxxxxx">
+            </div>
+
+            <div class="p-2 bg-light rounded-2 text-muted small mb-3">
+              ℹ️ <em>Specification Note: In this system, all admins share the same role without hierarchy.</em>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+              <button type="button" class="btn btn-outline-secondary" (click)="closeAdminModal()">Cancel</button>
+              <button type="submit" class="btn btn-brand-primary" [disabled]="isCreatingAdmin">
+                @if(isCreatingAdmin){
+                  <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                  Creating...
+                }
+                @else {
+                  Create Administrator
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+}

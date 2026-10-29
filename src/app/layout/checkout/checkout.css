@@ -1,0 +1,37 @@
+.step-num-badge {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #0f172a;
+    color: #ffffff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.success-icon-wrap {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: #ecfdf5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.address-select-card {
+    transition: all 0.2s ease;
+    cursor: pointer;
+    background: #ffffff;
+}
+
+.address-select-card:hover {
+    border-color: #94a3b8 !important;
+}
+
+.address-select-card.selected {
+    border-color: #0f172a !important;
+    background-color: #f8fafc;
+}

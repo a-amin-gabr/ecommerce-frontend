@@ -1,0 +1,97 @@
+<div class="py-5 bg-white border-bottom mb-4">
+  <div class="container text-center">
+    <span class="section-tag">Terms & Transparency</span>
+    <h1 class="section-title">Store Policies</h1>
+    <p class="section-subtitle">Clear, fair, and reliable policies designed to protect our valued customers.</p>
+  </div>
+</div>
+
+<div class="container mb-5">
+  <div class="row g-4 justify-content-center">
+    <div class="col-lg-3 col-md-4">
+      <div class="card-premium p-3">
+        <div class="nav flex-column nav-pills gap-1">
+          <button 
+            class="nav-link text-start py-2 px-3 fw-semibold"
+            [class.active]="activeTab === 'returns'"
+            (click)="activeTab = 'returns'">
+            Return & Exchange Policy
+          </button>
+          <button 
+            class="nav-link text-start py-2 px-3 fw-semibold"
+            [class.active]="activeTab === 'cod'"
+            (click)="activeTab = 'cod'">
+            Cash on Delivery (COD) Rules
+          </button>
+          <button 
+            class="nav-link text-start py-2 px-3 fw-semibold"
+            [class.active]="activeTab === 'shipping'"
+            (click)="activeTab = 'shipping'">
+            Shipping & Fulfillment
+          </button>
+          <button 
+            class="nav-link text-start py-2 px-3 fw-semibold"
+            [class.active]="activeTab === 'privacy'"
+            (click)="activeTab = 'privacy'">
+            Privacy & Order Data
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-8 col-md-8">
+      <div class="card-premium p-4 p-md-5">
+        @if(activeTab === 'returns'){
+          <h3 class="fs-4 fw-bold text-dark mb-3">14-Day Return & Exchange Policy</h3>
+          <p class="text-secondary lh-lg mb-3">
+            We want you to feel completely confident wearing our pieces. If a garment does not fit as desired or does not meet your expectations:
+          </p>
+          <ul class="text-secondary lh-lg mb-4">
+            <li>You can request a replacement or return within <strong>14 calendar days</strong> from the delivery date.</li>
+            <li>Garments must remain in unworn condition, unwashed, and with all original brand tags intact.</li>
+            <li>In case of exchange, our courier delivers the new item and retrieves the original item at the same time.</li>
+            <li>Refunds for cash-on-delivery purchases are issued via courier collection or Vodafone Cash / Instapay transfer.</li>
+          </ul>
+        }
+
+        @if(activeTab === 'cod'){
+          <h3 class="fs-4 fw-bold text-dark mb-3">Cash on Delivery (COD) Terms</h3>
+          <p class="text-secondary lh-lg mb-3">
+            All orders placed on our website are fulfilled with <strong>Cash on Delivery (الدفع عند الاستلام)</strong>:
+          </p>
+          <ul class="text-secondary lh-lg mb-4">
+            <li>No credit card, debit card, or advance deposit is required to place an order.</li>
+            <li>Your order is verified by our admin team and passed directly to local courier dispatch.</li>
+            <li>You pay the exact total in cash when the representative arrives at your door.</li>
+            <li>Please ensure an active mobile phone number is provided so the courier can reach you.</li>
+          </ul>
+        }
+
+        @if(activeTab === 'shipping'){
+          <h3 class="fs-4 fw-bold text-dark mb-3">Shipping & Delivery Times</h3>
+          <p class="text-secondary lh-lg mb-3">
+            We currently deliver across all Egyptian governorates:
+          </p>
+          <ul class="text-secondary lh-lg mb-4">
+            <li><strong>Greater Cairo & Giza:</strong> Delivered within 24 to 48 hours.</li>
+            <li><strong>Alexandria & Delta Governorates:</strong> Delivered within 2 to 3 business days.</li>
+            <li><strong>Upper Egypt & Canal Cities:</strong> Delivered within 3 to 4 business days.</li>
+            <li>You can inspect the package exterior with the courier upon delivery.</li>
+          </ul>
+        }
+
+        @if(activeTab === 'privacy'){
+          <h3 class="fs-4 fw-bold text-dark mb-3">Privacy & Order Snapshot Policy</h3>
+          <p class="text-secondary lh-lg mb-3">
+            We respect your privacy and handle your personal details with strict security:
+          </p>
+          <ul class="text-secondary lh-lg mb-4">
+            <li>Registration only asks for your Name, Email, and Password. We do not demand phone numbers or home addresses during initial sign-up.</li>
+            <li>When you place an order, an immutable snapshot of your address and mobile is stored with the specific order for courier routing.</li>
+            <li>Your contact info is never sold, leased, or shared with unauthorized 3rd parties.</li>
+          </ul>
+        }
+      </div>
+    </div>
+  </div>
+</div>

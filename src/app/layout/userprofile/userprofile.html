@@ -1,0 +1,340 @@
+<div class="py-4 bg-light border-bottom mb-4">
+  <div class="container">
+    <div class="d-flex align-items-center gap-3">
+      <div class="user-avatar-circle" style="width: 52px; height: 52px; font-size: 1.25rem;">
+        {{ user?.name?.charAt(0)?.toUpperCase() || 'U' }}
+      </div>
+      <div>
+        <h1 class="h3 fw-bold mb-1 text-dark">{{ user?.name || 'Customer Profile' }}</h1>
+        <p class="text-secondary small mb-0">{{ user?.email }} • Role: <span class="badge bg-secondary-subtle text-dark text-uppercase">{{ user?.role }}</span></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container mb-5">
+  <div class="row g-4">
+    <!-- Sidebar Navigation Tabs -->
+    <div class="col-lg-3 col-md-4">
+      <div class="card-premium p-3">
+        <div class="nav flex-column nav-pills gap-1">
+          <button 
+            class="nav-link text-start py-2 px-3 fw-semibold d-flex align-items-center gap-2"
+            [class.active]="activeTab === 'orders'"
+            (click)="activeTab = 'orders'">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+            My Orders
+            <span class="badge bg-secondary ms-auto small">{{ orders.length }}</span>
+          </button>
+
+          <button 
+            class="nav-link text-start py-2 px-3 fw-semibold d-flex align-items-center gap-2"
+            [class.active]="activeTab === 'addresses'"
+            (click)="activeTab = 'addresses'">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            Saved Addresses
+            <span class="badge bg-secondary ms-auto small">{{ addresses.length }}</span>
+          </button>
+
+          <button 
+            class="nav-link text-start py-2 px-3 fw-semibold d-flex align-items-center gap-2"
+            [class.active]="activeTab === 'profile'"
+            (click)="activeTab = 'profile'">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg>
+            Account Details
+          </button>
+
+          <button 
+            class="nav-link text-start py-2 px-3 fw-semibold d-flex align-items-center gap-2"
+            [class.active]="activeTab === 'testimonial'"
+            (click)="activeTab = 'testimonial'">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Leave Feedback
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="col-lg-9 col-md-8">
+      <!-- Tab 1: Orders -->
+      @if(activeTab === 'orders'){
+        <div class="card-premium p-4">
+          <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+            <div>
+              <h5 class="fw-bold mb-0 text-dark">Order History</h5>
+              <small class="text-secondary">Track the fulfillment status of your clothes orders.</small>
+            </div>
+            <a routerLink="/product-list" class="btn btn-brand-primary btn-sm">New Order</a>
+          </div>
+
+          @if(orders.length === 0){
+            <div class="text-center py-5">
+              <div class="text-muted mb-3">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+              </div>
+              <h6 class="fw-bold text-dark mb-1">No Orders Yet</h6>
+              <p class="text-secondary small mb-3">You haven't placed any Cash on Delivery orders yet.</p>
+              <a routerLink="/product-list" class="btn btn-brand-outline btn-sm">Browse Clothes</a>
+            </div>
+          }
+          @else {
+            <div class="d-flex flex-column gap-3">
+              @for(order of orders; track order._id){
+                <div class="p-4 rounded-3 border bg-white shadow-sm">
+                  <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 pb-3 border-bottom mb-3">
+                    <div>
+                      <div class="d-flex align-items-center gap-2">
+                        <span class="fw-bold text-dark">Order #{{ order._id.substring(order._id.length - 8).toUpperCase() }}</span>
+                        <span class="badge text-uppercase small" [ngClass]="getStatusBadgeClass(order.status)">
+                          {{ order.status }}
+                        </span>
+                      </div>
+                      <span class="text-muted small">Placed on {{ order.date }} ({{ order.timestamp | date:'shortTime' }})</span>
+                    </div>
+
+                    <div class="text-end">
+                      <span class="text-muted small d-block">Total to Pay (COD)</span>
+                      <strong class="fs-5 text-dark">{{ order.totalAmount }} EGP</strong>
+                    </div>
+                  </div>
+
+                  <!-- Order Snapshots & Items -->
+                  <div class="row g-3 mb-3 small">
+                    <div class="col-sm-6">
+                      <span class="text-muted d-block">Delivery Address (Snapshot):</span>
+                      <span class="fw-semibold text-dark">{{ order.addressSnapshot?.title }}: {{ order.addressSnapshot?.addressData }}, {{ order.addressSnapshot?.city }}</span>
+                    </div>
+                    <div class="col-sm-6">
+                      <span class="text-muted d-block">Contact Mobile (Snapshot):</span>
+                      <span class="fw-semibold text-dark">{{ order.mobileSnapshot }}</span>
+                    </div>
+                  </div>
+
+                  <div class="bg-light p-3 rounded-3 mb-3">
+                    <div class="fw-bold text-muted small text-uppercase mb-2">Order Items (Prices at purchase):</div>
+                    <div class="d-flex flex-column gap-2">
+                      @for(item of order.orderItems; track item.productId){
+                        <div class="d-flex justify-content-between align-items-center small">
+                          <span>{{ item.quantity }}x <strong class="text-dark">{{ item.name }}</strong></span>
+                          <span>{{ item.price }} EGP each = <strong class="text-dark">{{ item.price * item.quantity }} EGP</strong></span>
+                        </div>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Cancel Order button for pending orders -->
+                  @if(order.status === 'pending'){
+                    <div class="d-flex justify-content-end">
+                      <button class="btn btn-outline-danger btn-sm" (click)="cancelOrder(order._id)">
+                        Cancel Order
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Tab 2: Saved Addresses -->
+      @if(activeTab === 'addresses'){
+        <div class="card-premium p-4">
+          <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+            <div>
+              <h5 class="fw-bold mb-0 text-dark">Address Book</h5>
+              <small class="text-secondary">Manage your delivery addresses for quick checkout.</small>
+            </div>
+            <button class="btn btn-brand-primary btn-sm" (click)="openAddAddressModal()">
+              + Add Address
+            </button>
+          </div>
+
+          @if(addresses.length === 0){
+            <div class="text-center py-5">
+              <div class="text-muted mb-2">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              </div>
+              <h6 class="fw-bold text-dark mb-1">No Saved Addresses</h6>
+              <p class="text-secondary small mb-3">Add your home or office address to save time when placing orders.</p>
+              <button class="btn btn-brand-primary btn-sm" (click)="openAddAddressModal()">Add Delivery Address</button>
+            </div>
+          }
+          @else {
+            <div class="row g-3">
+              @for(addr of addresses; track addr._id){
+                <div class="col-md-6">
+                  <div class="p-3 rounded-3 border bg-white h-100 d-flex flex-column" [class.border-dark]="addr.isDefault">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <strong class="text-dark">{{ addr.title }}</strong>
+                      @if(addr.isDefault){
+                        <span class="badge bg-success-subtle text-success small">Default</span>
+                      }
+                      @else {
+                        <button class="btn btn-link btn-sm text-secondary text-decoration-none p-0 small" (click)="setDefaultAddress(addr._id)">
+                          Set as Default
+                        </button>
+                      }
+                    </div>
+
+                    <p class="text-secondary small mb-3 flex-grow-1">
+                      {{ addr.addressData }}<br>
+                      <strong>{{ addr.city }}</strong>, Egypt
+                    </p>
+
+                    <div class="d-flex gap-2 pt-2 border-top">
+                      <button class="btn btn-outline-secondary btn-sm flex-grow-1" (click)="openEditAddressModal(addr)">
+                        Edit
+                      </button>
+                      <button class="btn btn-outline-danger btn-sm" (click)="deleteAddress(addr._id)">
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Tab 3: Account Profile Details -->
+      @if(activeTab === 'profile'){
+        <div class="card-premium p-4">
+          <h5 class="fw-bold mb-3 pb-2 border-bottom text-dark">Personal Information</h5>
+
+          @if(profileMsg){
+            <div class="alert alert-success rounded-3 small mb-3">{{ profileMsg }}</div>
+          }
+
+          <form (ngSubmit)="updateProfile()">
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-muted text-uppercase">Full Name</label>
+              <input type="text" class="form-control" [(ngModel)]="profileName" name="profileName" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-muted text-uppercase">Email Address</label>
+              <input type="email" class="form-control bg-light" [value]="user?.email" disabled>
+              <small class="text-muted">Email cannot be modified.</small>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label small fw-bold text-muted text-uppercase">Primary Phone Number</label>
+              <input type="tel" class="form-control" [(ngModel)]="profilePhone" name="profilePhone" placeholder="e.g. 01012345678">
+              <small class="text-muted">Used as default phone snapshot during checkout.</small>
+            </div>
+
+            <button type="submit" class="btn btn-brand-primary">
+              Save Profile Changes
+            </button>
+          </form>
+        </div>
+      }
+
+      <!-- Tab 4: Leave Testimonial -->
+      @if(activeTab === 'testimonial'){
+        <div class="card-premium p-4">
+          <h5 class="fw-bold mb-1 text-dark">Submit Store Testimonial</h5>
+          <p class="text-secondary small mb-4 pb-2 border-bottom">Share your feedback about fabric quality and delivery service.</p>
+
+          @if(testMsg){
+            <div class="alert alert-success rounded-3 small mb-3">{{ testMsg }}</div>
+          }
+          @if(testError){
+            <div class="alert alert-danger rounded-3 small mb-3">{{ testError }}</div>
+          }
+
+          <form (ngSubmit)="submitTestimonial()">
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-muted text-uppercase">Rating</label>
+              <select class="form-select" [(ngModel)]="testRating" name="testRating">
+                <option [value]="5">⭐⭐⭐⭐⭐ 5 Stars - Excellent</option>
+                <option [value]="4">⭐⭐⭐⭐ 4 Stars - Very Good</option>
+                <option [value]="3">⭐⭐⭐ 3 Stars - Average</option>
+                <option [value]="2">⭐⭐ 2 Stars - Fair</option>
+                <option [value]="1">⭐ 1 Star - Poor</option>
+              </select>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label small fw-bold text-muted text-uppercase">Your Review</label>
+              <textarea class="form-control" rows="4" [(ngModel)]="testComment" name="testComment" placeholder="Write your thoughts..." required></textarea>
+              <small class="text-muted">Reviews are reviewed by Admin before being displayed on the storefront.</small>
+            </div>
+
+            <button type="submit" class="btn btn-brand-primary" [disabled]="testSubmitting">
+              @if(testSubmitting){
+                <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                Submitting...
+              }
+              @else {
+                Submit For Review
+              }
+            </button>
+          </form>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Address Modal (Add / Edit) -->
+@if(showAddressModal){
+  <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.6);" (click)="showAddressModal = false">
+    <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+      <div class="modal-content border-0 shadow-lg rounded-4">
+        <div class="modal-header border-bottom px-4 pt-4 pb-3">
+          <h5 class="modal-title fw-bold text-dark">{{ editingAddressId ? 'Edit Address' : 'Add New Address' }}</h5>
+          <button type="button" class="btn-close" (click)="showAddressModal = false"></button>
+        </div>
+
+        <div class="modal-body p-4">
+          @if(addrMsg){
+            <div class="alert alert-danger rounded-3 small mb-3">{{ addrMsg }}</div>
+          }
+
+          <form (ngSubmit)="saveAddress()">
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-muted">Title / Label</label>
+              <input type="text" class="form-control" [(ngModel)]="addrTitle" name="addrTitle" placeholder="e.g. Home, Work, Parents House" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-muted">City / Governorate</label>
+              <select class="form-select" [(ngModel)]="addrCity" name="addrCity">
+                <option value="Cairo">Cairo</option>
+                <option value="Giza">Giza</option>
+                <option value="Alexandria">Alexandria</option>
+                <option value="Mansoura">Mansoura</option>
+                <option value="Tanta">Tanta</option>
+                <option value="Zagazig">Zagazig</option>
+                <option value="Other">Other Governorate</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-muted">Detailed Address</label>
+              <textarea class="form-control" rows="3" [(ngModel)]="addrData" name="addrData" placeholder="Street, Building No., Floor, Apt..." required></textarea>
+            </div>
+
+            <div class="mb-4">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="addrDefCheck" [(ngModel)]="addrDefault" name="addrDefault">
+                <label class="form-check-label small" for="addrDefCheck">
+                  Set as default delivery address
+                </label>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+              <button type="button" class="btn btn-outline-secondary" (click)="showAddressModal = false">Cancel</button>
+              <button type="submit" class="btn btn-brand-primary">Save Address</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+}

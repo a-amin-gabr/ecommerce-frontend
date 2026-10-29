@@ -1,0 +1,163 @@
+<div class="py-4 bg-light border-bottom mb-4">
+  <div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0 small">
+        <li class="breadcrumb-item"><a routerLink="/" class="text-secondary text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item"><a routerLink="/product-list" class="text-secondary text-decoration-none">Shop</a></li>
+        <li class="breadcrumb-item text-secondary">{{ getCategoryTitle() }}</li>
+        <li class="breadcrumb-item active text-dark fw-semibold" aria-current="page">{{ myProduct?.name || myProduct?.title }}</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<div class="container py-3 mb-5">
+  @if(myProduct){
+    <div class="row g-5 mb-5 align-items-center">
+      <!-- Product Gallery / Image -->
+      <div class="col-lg-6">
+        <div class="product-gallery-card card-premium overflow-hidden text-center position-relative">
+          <!-- Stock Badge Overlay -->
+          <div class="position-absolute top-0 start-0 m-3 z-2">
+            @if(myProduct.stock === 0){
+              <span class="badge-stock badge-out-of-stock">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                Out of Stock
+              </span>
+            }
+            @else if(myProduct.stock <= 3){
+              <span class="badge-stock badge-low-stock">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Hurry! Only {{ myProduct.stock }} left in stock
+              </span>
+            }
+            @else {
+              <span class="badge-stock badge-in-stock">
+                In Stock ({{ myProduct.stock }} available)
+              </span>
+            }
+          </div>
+
+          <img 
+            [src]="getImageUrl()" 
+            [alt]="myProduct.name" 
+            class="img-fluid w-100 product-main-img" 
+            (error)="$any($event.target).src='https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80'">
+        </div>
+      </div>
+
+      <!-- Product Details Column -->
+      <div class="col-lg-6">
+        <div class="ps-lg-4">
+          <span class="product-category-tag text-uppercase mb-2 d-inline-block">{{ getCategoryTitle() }}</span>
+          <h1 class="display-6 fw-bold mb-3 text-dark">{{ myProduct.name || myProduct.title }}</h1>
+
+          <!-- Price Display -->
+          <div class="d-flex align-items-baseline gap-2 mb-4 pb-3 border-bottom">
+            <span class="display-6 fw-bold text-dark">{{ myProduct.price }}</span>
+            <span class="fs-5 text-secondary fw-semibold">EGP</span>
+            <span class="badge bg-secondary-subtle text-secondary ms-2 small">Cash on Delivery</span>
+          </div>
+
+          <!-- Description -->
+          <div class="mb-4">
+            <h6 class="fw-bold text-uppercase small text-muted mb-2 tracking-wider">Product Description</h6>
+            <p class="text-secondary lead fs-6 lh-lg mb-0">
+              {{ myProduct.desc || myProduct.description || 'Premium wardrobe piece crafted from quality fabrics with attention to stitch details, designed to provide comfort and lasting modern appeal.' }}
+            </p>
+          </div>
+
+          <!-- Scope Highlights: COD, No sizes, No colors -->
+          <div class="row g-2 mb-4 p-3 bg-white rounded-3 border">
+            <div class="col-sm-6 d-flex align-items-center gap-2 text-secondary small">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c2410c" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>Payment: <strong>Cash on Delivery (COD)</strong></span>
+            </div>
+            <div class="col-sm-6 d-flex align-items-center gap-2 text-secondary small">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c2410c" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>Fit: <strong>Standard Universal Fit</strong></span>
+            </div>
+            <div class="col-sm-6 d-flex align-items-center gap-2 text-secondary small">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c2410c" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>Delivery: <strong>Fast 24-48 Hours</strong></span>
+            </div>
+            <div class="col-sm-6 d-flex align-items-center gap-2 text-secondary small">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c2410c" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>Guarantee: <strong>14-Day Exchanges</strong></span>
+            </div>
+          </div>
+
+          <!-- Quantity Picker & Purchase Actions -->
+          @if(myProduct.stock === 0){
+            <div class="alert alert-danger d-flex align-items-center gap-2 rounded-3 mb-4">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <div>
+                <strong>Currently Out of Stock!</strong> We are currently preparing a fresh batch. Check back soon!
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-lg w-100 disabled" disabled>Out of Stock</button>
+          }
+          @else {
+            <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
+              <!-- Quantity selector -->
+              <div class="input-group qty-group" style="width: 140px;">
+                <button class="btn btn-outline-secondary" type="button" (click)="decrementQty()" [disabled]="quantity <= 1">−</button>
+                <input type="text" class="form-control text-center fw-bold bg-white" [value]="quantity" readonly>
+                <button class="btn btn-outline-secondary" type="button" (click)="incrementQty()" [disabled]="quantity >= myProduct.stock">+</button>
+              </div>
+
+              <!-- Add to Cart CTA -->
+              <button 
+                type="button" 
+                class="btn btn-lg flex-grow-1"
+                [ngClass]="addedSuccess ? 'btn-success' : 'btn-brand-accent'"
+                (click)="addToCart()"
+                [disabled]="isAdding">
+                @if(isAdding){
+                  <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                  Adding to Cart...
+                }
+                @else if(addedSuccess){
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-2"><polyline points="20 6 9 17 4 12"/></svg>
+                  Added to Cart! ({{ quantity }})
+                }
+                @else {
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                  Add to Cart • {{ myProduct.price * quantity }} EGP
+                }
+              </button>
+            </div>
+          }
+
+          <!-- Checkout Flow note -->
+          <div class="d-flex align-items-center gap-2 text-muted small mt-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>You can add to cart now. We will ask for your address and phone at checkout.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Related Products -->
+    @if(relatedProducts.length > 0){
+      <div class="pt-5 border-top">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+          <div>
+            <span class="section-tag">Curated For You</span>
+            <h2 class="section-title fs-3 mb-0">Related Clothes You May Like</h2>
+          </div>
+          <a routerLink="/product-list" class="btn btn-brand-outline btn-sm">Explore All</a>
+        </div>
+
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+          @for(product of relatedProducts; track product._id){
+            <div class="col">
+              <app-product [myProduct]="product"></app-product>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  }
+</div>

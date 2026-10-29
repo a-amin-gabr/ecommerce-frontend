@@ -1,0 +1,108 @@
+<div class="container py-4 mb-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 fw-bold text-dark mb-1">Dynamic FAQs Management</h1>
+      <p class="text-secondary small mb-0">Add, edit, or hard-delete customer support questions.</p>
+    </div>
+    <button class="btn btn-brand-primary" (click)="openAddModal()">
+      + Add New FAQ
+    </button>
+  </div>
+
+  <div class="card-premium p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold text-dark fs-6 mb-0">Total FAQs: {{ faqs.length }}</h5>
+      <span class="badge bg-light text-muted border small">Hard Delete Enabled</span>
+    </div>
+
+    @if(isLoading){
+      <div class="text-center py-5">
+        <div class="spinner-border text-dark" role="status"></div>
+      </div>
+    }
+    @else if(faqs.length === 0){
+      <div class="text-center py-5 text-muted small">
+        No FAQs created yet. Click "+ Add New FAQ" to create one.
+      </div>
+    }
+    @else {
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light small">
+            <tr>
+              <th style="width: 60px;">Order</th>
+              <th>Category</th>
+              <th>Question</th>
+              <th>Answer</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for(f of faqs; track f._id){
+              <tr>
+                <td class="text-muted small fw-bold">{{ f.order || 0 }}</td>
+                <td><span class="badge bg-secondary-subtle text-dark small">{{ f.category || 'General' }}</span></td>
+                <td class="fw-semibold text-dark small" style="max-width: 250px;">{{ f.question }}</td>
+                <td class="text-secondary small text-truncate" style="max-width: 320px;">{{ f.answer }}</td>
+                <td class="text-end">
+                  <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-secondary" (click)="openEditModal(f)">Edit</button>
+                    <button class="btn btn-outline-danger" (click)="deleteFAQ(f._id)">Delete</button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Add / Edit Modal -->
+@if(showModal){
+  <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.6);" (click)="closeModal()">
+    <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-content border-0 shadow-lg rounded-4">
+        <div class="modal-header border-bottom px-4 pt-4 pb-3">
+          <h5 class="modal-title fw-bold text-dark">{{ editingId ? 'Edit FAQ' : 'Add FAQ' }}</h5>
+          <button type="button" class="btn-close" (click)="closeModal()"></button>
+        </div>
+
+        <div class="modal-body p-4">
+          @if(formError){
+            <div class="alert alert-danger rounded-3 small mb-3">{{ formError }}</div>
+          }
+
+          <form (ngSubmit)="saveFAQ()">
+            <div class="row g-3 mb-3">
+              <div class="col-md-8">
+                <label class="form-label small fw-bold text-muted text-uppercase">Question</label>
+                <input type="text" class="form-control" [(ngModel)]="formQuestion" name="formQuestion" required placeholder="e.g. How does Cash on Delivery work?">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted text-uppercase">Category</label>
+                <input type="text" class="form-control" [(ngModel)]="formCategory" name="formCategory" placeholder="e.g. Orders, Shipping, Returns">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-muted text-uppercase">Answer</label>
+              <textarea class="form-control" rows="4" [(ngModel)]="formAnswer" name="formAnswer" required placeholder="Detailed answer explaining the policy or procedure..."></textarea>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label small fw-bold text-muted text-uppercase">Display Sort Order</label>
+              <input type="number" class="form-control w-25" [(ngModel)]="formOrder" name="formOrder">
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+              <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
+              <button type="submit" class="btn btn-brand-primary">Save FAQ</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+}

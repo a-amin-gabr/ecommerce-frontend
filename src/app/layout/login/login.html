@@ -1,0 +1,75 @@
+<div class="container py-5 my-md-4">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="card-premium p-4 p-sm-5 shadow-lg">
+        <div class="text-center mb-4">
+          <div class="brand-badge-icon mx-auto mb-3" style="width: 48px; height: 48px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/>
+            </svg>
+          </div>
+          <h2 class="fs-4 fw-bold text-dark mb-1">Welcome Back</h2>
+          <p class="text-secondary small mb-0">Sign in to manage your COD orders and saved addresses.</p>
+        </div>
+
+        @if(errorMessage){
+          <div class="alert alert-danger d-flex align-items-center gap-2 rounded-3 small mb-3">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div>{{ errorMessage }}</div>
+          </div>
+        }
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-uppercase text-muted">Email Address</label>
+            <input 
+              type="email" 
+              class="form-control form-control-lg fs-6" 
+              placeholder="name@example.com" 
+              formControlName="email"
+              [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+            @if(loginForm.get('email')?.invalid && loginForm.get('email')?.touched){
+              <div class="invalid-feedback small">Please enter a valid email address.</div>
+            }
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label small fw-bold text-uppercase text-muted">Password</label>
+            <input 
+              type="password" 
+              class="form-control form-control-lg fs-6" 
+              placeholder="Enter your password" 
+              formControlName="password"
+              [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+            @if(loginForm.get('password')?.invalid && loginForm.get('password')?.touched){
+              <div class="invalid-feedback small">Password is required.</div>
+            }
+          </div>
+
+          <button 
+            type="submit" 
+            class="btn btn-brand-primary btn-lg w-100 fw-bold mb-3" 
+            [disabled]="isLoading">
+            @if(isLoading){
+              <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+              Signing in...
+            }
+            @else {
+              Sign In
+            }
+          </button>
+
+          <!-- Demo credentials hint for convenience -->
+          <div class="p-2 bg-light rounded-2 text-center text-muted small mb-3" style="font-size: 0.78rem;">
+            Demo Admin: <strong>admin@store.com</strong> | <strong>AdminPassword123!</strong>
+          </div>
+
+          <div class="text-center text-secondary small">
+            Don't have an account yet? 
+            <a routerLink="/signup" [queryParams]="returnUrl !== '/' ? { returnUrl: returnUrl } : null" class="text-primary fw-bold text-decoration-none">Sign up free</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

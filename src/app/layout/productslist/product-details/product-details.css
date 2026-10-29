@@ -1,0 +1,23 @@
+.product-gallery-card {
+    border-radius: 18px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    max-height: 520px;
+}
+
+.product-main-img {
+    max-height: 520px;
+    object-fit: cover;
+}
+
+.qty-group .form-control {
+    font-size: 1.1rem;
+    border-color: #cbd5e1;
+}
+
+.qty-group .btn {
+    border-color: #cbd5e1;
+    font-size: 1.2rem;
+    font-weight: 700;
+    padding: 0 0.85rem;
+}

@@ -1,0 +1,201 @@
+<div class="container py-4 mb-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 fw-bold text-dark mb-1">Orders Management (Cash on Delivery)</h1>
+      <p class="text-secondary small mb-0">Fulfill, track, and update delivery statuses for all customer orders.</p>
+    </div>
+  </div>
+
+  <!-- Filters Bar -->
+  <div class="card-premium p-3 mb-4">
+    <div class="row g-3 align-items-center">
+      <div class="col-md-4 col-sm-6">
+        <label class="form-label small fw-bold text-muted text-uppercase">Filter By Status</label>
+        <select class="form-select" [(ngModel)]="selectedStatus" (change)="fetchOrders()">
+          <option value="">All Statuses</option>
+          @for(s of availableStatuses; track s){
+            <option [value]="s">{{ s }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <label class="form-label small fw-bold text-muted text-uppercase">Filter By Date</label>
+        <input type="date" class="form-control" [(ngModel)]="selectedDate" (change)="fetchOrders()">
+      </div>
+
+      <div class="col-md-4 text-md-end pt-md-4">
+        <button class="btn btn-outline-secondary btn-sm" (click)="selectedStatus=''; selectedDate=''; fetchOrders()">
+          Reset Filters
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Orders Table -->
+  <div class="card-premium p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <span class="fw-bold text-dark fs-6">Orders Count: {{ orders.length }}</span>
+      <span class="badge bg-warning-subtle text-dark border small">💵 All Orders: Cash on Delivery</span>
+    </div>
+
+    @if(isLoading){
+      <div class="text-center py-5">
+        <div class="spinner-border text-dark" role="status"></div>
+      </div>
+    }
+    @else if(orders.length === 0){
+      <div class="text-center py-5 text-muted small">
+        No orders found matching the selected filters.
+      </div>
+    }
+    @else {
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light small">
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Mobile Snapshot</th>
+              <th>Address Snapshot</th>
+              <th>Items</th>
+              <th>Total (COD)</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for(order of orders; track order._id){
+              <tr>
+                <td class="fw-bold text-dark small">#{{ order._id.substring(order._id.length - 8).toUpperCase() }}</td>
+                <td class="small">
+                  <div class="fw-semibold text-dark">{{ order.userId ? ($any(order.userId).name || 'Guest') : 'User' }}</div>
+                  <div class="text-muted" style="font-size: 0.75rem;">{{ order.userId ? $any(order.userId).email : '' }}</div>
+                </td>
+                <td class="small fw-semibold">{{ order.mobileSnapshot }}</td>
+                <td class="small text-truncate" style="max-width: 180px;">
+                  {{ order.addressSnapshot?.title }}: {{ order.addressSnapshot?.addressData }}, {{ order.addressSnapshot?.city }}
+                </td>
+                <td class="small text-center">
+                  <span class="badge bg-secondary rounded-pill">{{ order.orderItems.length }} items</span>
+                </td>
+                <td class="small fw-bold text-dark">{{ order.totalAmount }} EGP</td>
+                <td>
+                  <span class="badge text-uppercase small" [ngClass]="getStatusBadgeClass(order.status)">
+                    {{ order.status }}
+                  </span>
+                </td>
+                <td class="small text-muted">{{ order.date }}</td>
+                <td class="text-end">
+                  <div class="d-flex justify-content-end gap-1">
+                    <button class="btn btn-sm btn-outline-secondary py-1 px-2" (click)="viewDetails(order)" title="View Details">
+                      Details
+                    </button>
+                    <!-- Status selector -->
+                    <select 
+                      class="form-select form-select-sm py-0 px-2" 
+                      style="width: 130px; font-size: 0.8rem;" 
+                      [value]="order.status" 
+                      (change)="changeStatus(order, $any($event.target).value)">
+                      @for(s of availableStatuses; track s){
+                        <option [value]="s">{{ s }}</option>
+                      }
+                    </select>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Order Details Modal -->
+@if(showDetailsModal && activeOrder){
+  <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.6);" (click)="closeDetails()">
+    <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-content border-0 shadow-lg rounded-4">
+        <div class="modal-header border-bottom px-4 pt-4 pb-3">
+          <div>
+            <h5 class="modal-title fw-bold text-dark">Order #{{ activeOrder._id.substring(activeOrder._id.length - 8).toUpperCase() }} Details</h5>
+            <small class="text-muted">Placed on {{ activeOrder.date }} at {{ activeOrder.timestamp | date:'mediumTime' }}</small>
+          </div>
+          <button type="button" class="btn-close" (click)="closeDetails()"></button>
+        </div>
+
+        <div class="modal-body p-4">
+          <!-- Snapshots Row -->
+          <div class="row g-3 p-3 bg-light rounded-3 mb-4 border">
+            <div class="col-md-6 small">
+              <span class="text-muted d-block">Delivery Address (Snapshot):</span>
+              <strong class="text-dark">{{ activeOrder.addressSnapshot.title }}:</strong> {{ activeOrder.addressSnapshot.addressData }}, {{ activeOrder.addressSnapshot.city }}
+            </div>
+            <div class="col-md-6 small">
+              <span class="text-muted d-block">Customer Mobile (Snapshot):</span>
+              <strong class="text-dark">{{ activeOrder.mobileSnapshot }}</strong>
+            </div>
+            <div class="col-md-6 small">
+              <span class="text-muted d-block">Customer Account:</span>
+              <span class="text-dark">{{ activeOrder.userId ? ($any(activeOrder.userId).name + ' (' + $any(activeOrder.userId).email + ')') : 'Direct Order' }}</span>
+            </div>
+            <div class="col-md-6 small">
+              <span class="text-muted d-block">Current Fulfillment Status:</span>
+              <span class="badge text-uppercase" [ngClass]="getStatusBadgeClass(activeOrder.status)">{{ activeOrder.status }}</span>
+            </div>
+          </div>
+
+          <!-- Items Table -->
+          <h6 class="fw-bold text-dark mb-2">Order Items (Purchase Prices Preserved):</h6>
+          <div class="table-responsive border rounded-3 mb-4">
+            <table class="table table-sm align-middle mb-0">
+              <thead class="table-light small">
+                <tr>
+                  <th>Product</th>
+                  <th>Quantity</th>
+                  <th>Unit Price at Order</th>
+                  <th class="text-end">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for(item of activeOrder.orderItems; track item.productId){
+                  <tr>
+                    <td class="fw-semibold text-dark small">{{ item.name }}</td>
+                    <td class="small">{{ item.quantity }}</td>
+                    <td class="small">{{ item.price }} EGP</td>
+                    <td class="small fw-bold text-end">{{ item.price * item.quantity }} EGP</td>
+                  </tr>
+                }
+              </tbody>
+              <tfoot class="table-light">
+                <tr>
+                  <th colspan="3" class="text-end">Total Amount (COD):</th>
+                  <th class="text-end text-primary fs-6">{{ activeOrder.totalAmount }} EGP</th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- Quick Status Transition inside Modal -->
+          <div class="d-flex align-items-center justify-content-between p-3 bg-white border rounded-3">
+            <div>
+              <span class="fw-bold text-dark small d-block">Transition Status:</span>
+              <small class="text-muted">Changes are recorded in real-time and restore inventory if cancelled.</small>
+            </div>
+            <select class="form-select form-select-sm w-auto" [value]="activeOrder.status" (change)="changeStatus(activeOrder, $any($event.target).value)">
+              @for(s of availableStatuses; track s){
+                <option [value]="s">{{ s }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer border-top px-4 py-3">
+          <button type="button" class="btn btn-outline-secondary" (click)="closeDetails()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
